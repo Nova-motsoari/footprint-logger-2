@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body>
+    <h1>Carbon Dashboard</h1>
+    <p>Total: <span id="total"></span> kg</p>
+    <p>Community Avg: <span id="avgEl"></span></p>
+    <canvas id="chart"></canvas>
+    <button onclick="addActivity()">Add Activity</button>
+    <button onclick="downloadData('csv')">Download CSV</button>
+    <script src="js/dashboard.js"></script>
+    <script src="js/charts.js"></script>
+    <script src="js/downloads.js"></script>
+</body>
+
+</html>
