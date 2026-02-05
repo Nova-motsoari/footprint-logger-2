@@ -3,20 +3,60 @@
 
 <head>
     <title>Dashboard</title>
-    <link rel="stylesheet" href="css/style.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
 <body>
-    <h1>Carbon Dashboard</h1>
-    <p>Total: <span id="total"></span> kg</p>
-    <p>Community Avg: <span id="avgEl"></span></p>
-    <canvas id="chart"></canvas>
-    <button onclick="addActivity()">Add Activity</button>
-    <button onclick="downloadData('csv')">Download CSV</button>
-    <script src="js/dashboard.js"></script>
-    <script src="js/charts.js"></script>
-    <script src="js/downloads.js"></script>
+    <h2>My Dashboard</h2>
+
+    <select id="activity">
+        <option value='{"label":"Car (10km)","category":"transport","co2":2.3}'>Car</option>
+        <option value='{"label":"Bus (10km)","category":"transport","co2":1}'>Bus</option>
+        <option value='{"label":"Beef Meal","category":"food","co2":5}'>Beef</option>
+    </select>
+
+    <button onclick="add()">Add</button>
+
+    <h3>Total: <span id="total"></span> kg</h3>
+    <ul id="list"></ul>
+
+    <h3>Leaderboard</h3>
+    <ul id="board"></ul>
+
+    <script>
+        const token = localStorage.token;
+
+        async function add() {
+            const data = JSON.parse(activity.value);
+            await fetch("/api/activities", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: "Bearer " + token
+                },
+                body: JSON.stringify(data)
+            });
+            load();
+        }
+
+        async function load() {
+            const res = await fetch("/api/activities/my", {
+                headers: { Authorization: "Bearer " + token }
+            });
+            const data = await res.json();
+            total.textContent = data.total;
+            list.innerHTML = data.activities.map(a => `<li>${a.label} - ${a.co2}</li>`).join("");
+        }
+
+        async function leaderboard() {
+            const res = await fetch("/api/activities/leaderboard");
+            const data = await res.json();
+            board.innerHTML = data.map(u => `<li>${u.total} kg</li>`).join("");
+        }
+
+        load();
+        leaderboard();
+    </script>
 </body>
 
 </html>

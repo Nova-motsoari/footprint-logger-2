@@ -1,16 +1,47 @@
-
 <!DOCTYPE html>
 <html>
+
 <head>
-<title>Login</title>
-<link rel="stylesheet" href="css/style.css">
+    <title>Login</title>
 </head>
+
 <body>
-<h2>Login / Register</h2>
-<input id="email" placeholder="Email">
-<input id="password" type="password">
-<button onclick="login()">Login</button>
-<button onclick="register()">Register</button>
-<script src="js/auth.js"></script>
+    <h2>Register</h2>
+    <input id="rname" placeholder="Name">
+    <input id="remail" placeholder="Email">
+    <input id="rpass" type="password" placeholder="Password">
+    <button onclick="register()">Register</button>
+
+    <h2>Login</h2>
+    <input id="email" placeholder="Email">
+    <input id="pass" type="password" placeholder="Password">
+    <button onclick="login()">Login</button>
+
+    <script>
+        async function register() {
+            await fetch("/api/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: rname.value,
+                    email: remail.value,
+                    password: rpass.value
+                })
+            });
+            alert("Registered!");
+        }
+
+        async function login() {
+            const res = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email: email.value, password: pass.value })
+            });
+            const data = await res.json();
+            localStorage.token = data.token;
+            location.href = "dashboard.html";
+        }
+    </script>
 </body>
+
 </html>
