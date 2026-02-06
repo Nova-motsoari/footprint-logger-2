@@ -1,21 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Login</title>
+    <meta charset="UTF-8" />
+    <title>Footprint Logger | Login</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            width: 320px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        input,
+        button {
+            width: 100%;
+            padding: 10px;
+            margin: 6px 0;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: #27ae60;
+        }
+
+        hr {
+            margin: 20px 0;
+        }
+    </style>
 </head>
 
 <body>
-    <h2>Register</h2>
-    <input id="rname" placeholder="Name">
-    <input id="remail" placeholder="Email">
-    <input id="rpass" type="password" placeholder="Password">
-    <button onclick="register()">Register</button>
 
-    <h2>Login</h2>
-    <input id="email" placeholder="Email">
-    <input id="pass" type="password" placeholder="Password">
-    <button onclick="login()">Login</button>
+    <div class="card">
+        <h2>Register</h2>
+        <input id="rname" placeholder="Name" />
+        <input id="remail" placeholder="Email" />
+        <input id="rpass" type="password" placeholder="Password" />
+        <button onclick="register()">Register</button>
+
+        <hr />
+
+        <h2>Login</h2>
+        <input id="email" placeholder="Email" />
+        <input id="pass" type="password" placeholder="Password" />
+        <button onclick="login()">Login</button>
+    </div>
 
     <script>
         async function register() {
@@ -28,20 +82,25 @@
                     password: rpass.value
                 })
             });
-            alert("Registered!");
+            alert("Registered successfully!");
         }
 
         async function login() {
             const res = await fetch("/api/auth/login", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ email: email.value, password: pass.value })
+                body: JSON.stringify({
+                    email: email.value,
+                    password: pass.value
+                })
             });
+
             const data = await res.json();
             localStorage.token = data.token;
-            location.href = "dashboard.html";
+            window.location.href = "dashboard.html";
         }
     </script>
+
 </body>
 
 </html>

@@ -1,32 +1,109 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <title>Dashboard</title>
+    <meta charset="UTF-8" />
+    <title>Footprint Logger | Dashboard</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f8;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        select,
+        button {
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        button {
+            background: #2ecc71;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-left: 5px;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            padding: 6px 0;
+            border-bottom: 1px solid #eee;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+    </style>
 </head>
 
 <body>
-    <h2>My Dashboard</h2>
 
-    <select id="activity">
-        <option value='{"label":"Car (10km)","category":"transport","co2":2.3}'>Car</option>
-        <option value='{"label":"Bus (10km)","category":"transport","co2":1}'>Bus</option>
-        <option value='{"label":"Beef Meal","category":"food","co2":5}'>Beef</option>
-    </select>
+    <div class="container">
+        <h1>🌍 My Carbon Dashboard</h1>
 
-    <button onclick="add()">Add</button>
+        <div class="card">
+            <h3>Add Activity</h3>
+            <select id="activity">
+                <option value='{"label":"Car (10km)","category":"transport","co2":2.3}'>Car (10km)</option>
+                <option value='{"label":"Bus (10km)","category":"transport","co2":1.0}'>Bus (10km)</option>
+                <option value='{"label":"Beef Meal","category":"food","co2":5.0}'>Beef Meal</option>
+                <option value='{"label":"Chicken Meal","category":"food","co2":2.0}'>Chicken Meal</option>
+            </select>
+            <button onclick="addActivity()">Add</button>
+        </div>
 
-    <h3>Total: <span id="total"></span> kg</h3>
-    <ul id="list"></ul>
+        <div class="grid">
+            <div class="card">
+                <h3>Total Emissions</h3>
+                <h2><span id="total">0</span> kg CO₂</h2>
+                <canvas id="categoryChart"></canvas>
+            </div>
 
-    <h3>Leaderboard</h3>
-    <ul id="board"></ul>
+            <div class="card">
+                <h3>Leaderboard (Lowest Emissions)</h3>
+                <ul id="leaderboard"></ul>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>My Activity Log</h3>
+            <ul id="list"></ul>
+        </div>
+    </div>
 
     <script>
         const token = localStorage.token;
+        let chart;
 
-        async function add() {
+        async function addActivity() {
             const data = JSON.parse(activity.value);
             await fetch("/api/activities", {
                 method: "POST",
@@ -36,27 +113,56 @@
                 },
                 body: JSON.stringify(data)
             });
-            load();
+            loadDashboard();
         }
 
-        async function load() {
+        async function loadDashboard() {
             const res = await fetch("/api/activities/my", {
                 headers: { Authorization: "Bearer " + token }
             });
+
             const data = await res.json();
-            total.textContent = data.total;
-            list.innerHTML = data.activities.map(a => `<li>${a.label} - ${a.co2}</li>`).join("");
+            total.textContent = data.total.toFixed(2);
+
+            list.innerHTML = data.activities
+                .map(a => `<li>${a.label} — ${a.co2} kg</li>`)
+                .join("");
+
+            drawChart(data.activities);
         }
 
-        async function leaderboard() {
+        function drawChart(activities) {
+            const categories = {};
+            activities.forEach(a => {
+                categories[a.category] = (categories[a.category] || 0) + a.co2;
+            });
+
+            if (chart) chart.destroy();
+
+            chart = new Chart(document.getElementById("categoryChart"), {
+                type: "pie",
+                data: {
+                    labels: Object.keys(categories),
+                    datasets: [{
+                        data: Object.values(categories)
+                    }]
+                }
+            });
+        }
+
+        async function loadLeaderboard() {
             const res = await fetch("/api/activities/leaderboard");
             const data = await res.json();
-            board.innerHTML = data.map(u => `<li>${u.total} kg</li>`).join("");
+
+            leaderboard.innerHTML = data.map(
+                (u, i) => `<li>#${i + 1} — ${u.total.toFixed(2)} kg</li>`
+            ).join("");
         }
 
-        load();
-        leaderboard();
+        loadDashboard();
+        loadLeaderboard();
     </script>
+
 </body>
 
 </html>
